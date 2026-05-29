@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vakansiyalar | SmartJob</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/public/css/dashboard.css">
+</head>
+<body>
+  {{> dash-topnav}}
+  <div class="layout">
+    {{> dash-sidebar}}
+    <main class="content">
+      <h1>Vakansiyalar</h1>
+      <p class="result-count">{{meta.total}} ta natija topildi</p>
+
+      <div class="vac-layout">
+        <aside class="filters">
+          <h3>🔽 Filtrlar</h3>
+          <form method="GET" action="/vacancies">
+            <label>Kategoriya</label>
+            <select name="category_id">
+              <option value="">Barchasi</option>
+              {{#each categories}}
+                <option value="{{this.id}}">{{this.name}}</option>
+              {{/each}}
+            </select>
+
+            <label>Lokatsiya</label>
+            <input type="text" name="location" placeholder="Toshkent...">
+
+            <label>Minimal maosh (mln)</label>
+            <input type="text" name="min_salary" placeholder="0">
+
+            <button type="submit" class="btn-tg">Qidirish</button>
+          </form>
+        </aside>
+
+        <div>
+          {{#each vacancies}}
+            {{> vacancy-card}}
+          {{else}}
+            <p>Natija topilmadi.</p>
+          {{/each}}
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

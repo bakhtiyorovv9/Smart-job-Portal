@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{vacancy.title}} | SmartJob</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/public/css/dashboard.css">
+</head>
+<body>
+  {{> dash-topnav}}
+  <div class="layout">
+    {{> dash-sidebar}}
+    <main class="main-content">
+
+      <!-- Breadcrumb -->
+      <div class="breadcrumb">
+        <a href="/vacancies"><i class="fa-solid fa-briefcase"></i> Vakansiyalar</a>
+        <span>/</span>
+        <span>{{vacancy.title}}</span>
+      </div>
+
+      <!-- Bosh karta -->
+      <div class="detail-head-card">
+        <div class="co-av-lg">{{initials vacancy.company.name}}</div>
+        <div class="detail-head-info">
+          <h1>{{vacancy.title}}</h1>
+          <p class="det-company">{{vacancy.company.name}} · {{vacancy.location}}</p>
+          <p class="det-salary">{{formatSalary vacancy.salary}}</p>
+        </div>
+        <div class="detail-actions">
+          <button class="btn-primary-sm" onclick="openApplyModal()">
+            <i class="fa-solid fa-paper-plane"></i> Ariza topshirish
+          </button>
+          <button class="btn-outline-sm" id="saveBtn" onclick="toggleSave({{vacancy.id}})">
+            <i class="fa-regular fa-bookmark"></i> Saqlash
+          </button>
+        </div>
+      </div>
+
+      <!-- Kontent -->
+      <div class="detail-grid">
+
+        <!-- Chap: Tavsif -->
+        <div class="det-main">
+          <div class="det-card">
+            <h2>Vakansiya haqida</h2>
+            <p class="det-desc">{{vacancy.description}}</p>
+          </div>
+        </div>
+
+        <!-- O'ng: Sidebar -->
+        <div class="det-side">
+
+          <!-- Kompaniya -->
+          <div class="det-card">
+            <div class="det-co-head">
+              <div class="co-av">{{initials vacancy.company.name}}</div>
+              <strong>{{vacancy.company.name}}</strong>
+            </div>
+            <p class="muted small">{{vacancy.company.description}}</p>
+            {{#if vacancy.company.website}}
+            <a href="{{vacancy.company.website}}" target="_blank" class="btn-outline-sm" style="margin-top:10px; display:block; text-align:center;">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Saytga o'tish
+            </a>
+            {{/if}}
+          </div>
+
+          <!-- Statistika -->
+          <div class="det-card">
+            <h3 style="margin:0 0 14px;">Statistika</h3>
+            <div class="stat-line">
+              <span>Arizalar soni</span>
+              <strong>{{applicationsCount}}</strong>
+            </div>
+            <div class="stat-line">
+              <span>E'lon qilindi</span>
+              <strong>{{timeAgo vacancy.created_at}}</strong>
+            </div>
+            <div class="stat-line">
+              <span>Holati</span>
+              <strong style="color:#16a34a;">
+                {{#if vacancy.is_active}}Faol{{else}}Yopiq{{/if}}
+              </strong>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ===== ARIZA TOPSHIRISH MODALI ===== -->
+  <div class="modal-overlay" id="applyModal" onclick="closeModal(event)">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3>Ariza topshirish</h3>
+        <button class="modal-close" onclick="closeApplyModal()">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="muted" style="margin-bottom:16px;">
+          <strong>{{vacancy.title}}</strong> — {{vacancy.company.name}}
+        </p>
+
+        <!-- Resume yuklash -->
+        <div class="form-grp">
+          <label>Rezyume (PDF, DOC, DOCX · max 5MB)</label>
+          <div class="file-drop" id="fileDrop" onclick="document.getElementById('resumeFile').click()">
+            <i class="fa-solid fa-cloud-arrow-up fa-2x muted"></i>
+            <p id="fileLabel">Fayl tanlash uchun bosing</p>
+            <input type="file" id="resumeFile" accept=".pdf,.doc,.docx" style="display:none"
+              onchange="onFileChange(this)">
+          </div>
+        </div>
+
+        <div id="apply-error" class="apply-error" style="display:none"></div>
+        <div id="apply-success" class="apply-success" style="display:none">
+          <i class="fa-solid fa-check-circle"></i> Ariza muvaffaqiyatli topshirildi!
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn-outline-sm" onclick="closeApplyModal()">Bekor qilish</button>
+        <button class="btn-primary-sm" id="submitBtn" onclick="submitApply({{vacancy.id}})">
+          <i class="fa-solid fa-paper-plane"></i> Topshirish
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Modal =====
+    function openApplyModal() {
+      document.getElementById('applyModal').style.display = 'flex';
+    }
+    function closeApplyModal() {
+      document.getElementById('applyModal').style.display = 'none';
+      document.getElementById('apply-error').style.display = 'none';
+      document.getElementById('apply-success').style.display = 'none';
+      document.getElementById('resumeFile').value = '';
+      document.getElementById('fileLabel').textContent = 'Fayl tanlash uchun bosing';
+    }
+    function closeModal(e) {
+      if (e.target.id === 'applyModal') closeApplyModal();
+    }
+
+    // ===== File tanlash =====
+    function onFileChange(input) {
+      const file = input.files[0];
+      if (file) {
+        document.getElementById('fileLabel').textContent = file.name;
+        document.getElementById('fileDrop').style.borderColor = 'var(--blue)';
+      }
+    }
+
+    // ===== Ariza yuborish =====
+    async function submitApply(vacancyId) {
+      const fileInput = document.getElementById('resumeFile');
+      const errEl = document.getElementById('apply-error');
+      const sucEl = document.getElementById('apply-success');
+      const btn = document.getElementById('submitBtn');
+
+      errEl.style.display = 'none';
+      sucEl.style.display = 'none';
+
+      if (!fileInput.files[0]) {
+        errEl.textContent = 'Rezyume faylini tanlang!';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append('vacancy_id', vacancyId);
+      formData.append('resume', fileInput.files[0]);
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yuborilmoqda...';
+
+      try {
+        const res = await fetch('/api/applications', {
+          method: 'POST',
+          credentials: 'include',
+          body: formData,
+        });
+        const json = await res.json();
+
+        if (res.ok && json.success) {
+          sucEl.style.display = 'block';
+          btn.style.display = 'none';
+          setTimeout(closeApplyModal, 2000);
+        } else {
+          errEl.textContent = json.message || 'Xatolik yuz berdi';
+          errEl.style.display = 'block';
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Topshirish';
+        }
+      } catch (e) {
+        errEl.textContent = 'Tarmoq xatosi. Qayta urinib ko\'ring.';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Topshirish';
+      }
+    }
+
+    // ===== Saqlash =====
+    async function toggleSave(vacancyId) {
+      const btn = document.getElementById('saveBtn');
+      try {
+        const checkRes = await fetch(`/api/saved-vacancies/${vacancyId}/check`, {
+          credentials: 'include'
+        });
+        const check = await checkRes.json();
+
+        if (check.saved) {
+          await fetch(`/api/saved-vacancies/${vacancyId}`, {
+            method: 'DELETE', credentials: 'include'
+          });
+          btn.innerHTML = '<i class="fa-regular fa-bookmark"></i> Saqlash';
+          btn.classList.remove('saved-active');
+        } else {
+          await fetch(`/api/saved-vacancies/${vacancyId}`, {
+            method: 'POST', credentials: 'include'
+          });
+          btn.innerHTML = '<i class="fa-solid fa-bookmark"></i> Saqlangan';
+          btn.classList.add('saved-active');
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    // ===== Sahifa yuklanganida saqlangan-saqlangan emasligini tekshir =====
+    (async () => {
+      try {
+        const res = await fetch('/api/saved-vacancies/{{vacancy.id}}/check', {
+          credentials: 'include'
+        });
+        const json = await res.json();
+        const btn = document.getElementById('saveBtn');
+        if (json.saved) {
+          btn.innerHTML = '<i class="fa-solid fa-bookmark"></i> Saqlangan';
+          btn.classList.add('saved-active');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Modal + detail CSS -->
+  <style>
+    .breadcrumb { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:14px; margin-bottom:20px; }
+    .breadcrumb a { color:var(--blue); text-decoration:none; }
+    .breadcrumb a:hover { text-decoration:underline; }
+
+    .detail-head-card {
+      background:#fff; border-radius:16px; border:1px solid var(--border);
+      padding:28px; display:flex; align-items:center; gap:20px; margin-bottom:24px;
+    }
+    .co-av-lg {
+      width:64px; height:64px; background:var(--blue); color:#fff; border-radius:16px;
+      display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:700; flex-shrink:0;
+    }
+    .detail-head-info { flex:1; }
+    .detail-head-info h1 { margin:0 0 6px; font-size:22px; font-weight:700; }
+    .det-company { color:var(--muted); font-size:14px; margin:0 0 6px; }
+    .det-salary  { color:var(--blue); font-weight:700; font-size:16px; margin:0; }
+    .detail-actions { display:flex; flex-direction:column; gap:8px; min-width:180px; }
+    .detail-actions .btn-primary-sm,
+    .detail-actions .btn-outline-sm { justify-content:center; }
+    .saved-active { background:#eff6ff; color:var(--blue); border-color:var(--blue); }
+
+    .detail-grid { display:grid; grid-template-columns:1fr 300px; gap:20px; }
+    .det-card { background:#fff; border-radius:12px; border:1px solid var(--border); padding:24px; margin-bottom:16px; }
+    .det-card h2 { margin:0 0 14px; font-size:18px; }
+    .det-desc { line-height:1.7; color:#374151; white-space:pre-line; }
+    .det-co-head { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+
+    /* Modal */
+    .modal-overlay {
+      display:none; position:fixed; inset:0; background:rgba(0,0,0,.5);
+      z-index:1000; justify-content:center; align-items:center; padding:20px;
+    }
+    .modal-box {
+      background:#fff; border-radius:16px; width:100%; max-width:480px;
+      box-shadow:0 20px 60px rgba(0,0,0,.15);
+    }
+    .modal-head {
+      display:flex; justify-content:space-between; align-items:center;
+      padding:20px 24px; border-bottom:1px solid var(--border);
+    }
+    .modal-head h3 { margin:0; font-size:18px; }
+    .modal-close { background:none; border:none; cursor:pointer; font-size:18px; color:var(--muted); }
+    .modal-body  { padding:24px; }
+    .modal-foot  { display:flex; justify-content:flex-end; gap:10px; padding:16px 24px; border-top:1px solid var(--border); }
+
+    .file-drop {
+      border:2px dashed var(--border); border-radius:10px; padding:30px 20px;
+      text-align:center; cursor:pointer; transition:border-color .2s;
+    }
+    .file-drop:hover { border-color:var(--blue); }
+    .file-drop p { margin:10px 0 0; color:var(--muted); font-size:14px; }
+
+    .apply-error   { background:#fee2e2; color:#dc2626; padding:10px 14px; border-radius:8px; font-size:14px; }
+    .apply-success { background:#dcfce7; color:#15803d; padding:10px 14px; border-radius:8px; font-size:14px; }
+  </style>
+
+</body>
+</html>

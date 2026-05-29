@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Profil | SmartJob</title>
+  <link rel="stylesheet" href="/public/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  {{> dash-topnav}}
+  <div class="layout">
+    {{> dash-sidebar}}
+    <main class="main-content">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Profil</h1>
+          <p class="page-sub">Sizning ma'lumotlaringiz va rezyume</p>
+        </div>
+      </div>
+
+      <!-- Banner -->
+      <div class="profile-banner">
+        <div class="pav-lg">{{initials user.full_name}}</div>
+        <div class="pb-info">
+          <h2>{{user.full_name}}</h2>
+          <p>{{user.position}} {{#if user.city}}· {{user.city}}{{/if}}</p>
+        </div>
+        <button class="btn-outline-sm" onclick="document.getElementById('fullNameInput').focus()">
+          <i class="fa-solid fa-pen"></i> Tahrirlash
+        </button>
+      </div>
+
+      <div class="profile-grid">
+
+        <!-- Forma -->
+        <div class="pf-card">
+          <h3>Asosiy ma'lumotlar</h3>
+          <div class="form-row2">
+            <div class="form-grp">
+              <label>F.I.O</label>
+              <input id="fullNameInput" type="text" id="inp_full_name" value="{{user.full_name}}" class="finput">
+            </div>
+            <div class="form-grp">
+              <label>Lavozim</label>
+              <input type="text" id="inp_position" value="{{user.position}}" placeholder="Frontend Developer" class="finput">
+            </div>
+          </div>
+          <div class="form-row2">
+            <div class="form-grp">
+              <label>Email</label>
+              <input type="email" id="inp_email" value="{{user.email}}" class="finput">
+            </div>
+            <div class="form-grp">
+              <label>Telefon</label>
+              <input type="text" id="inp_phone" value="{{user.phone}}" placeholder="+998 90 123 45 67" class="finput">
+            </div>
+          </div>
+          <div class="form-row2">
+            <div class="form-grp">
+              <label>Shahar</label>
+              <input type="text" id="inp_city" value="{{user.city}}" placeholder="Toshkent" class="finput">
+            </div>
+            <div class="form-grp">
+              <label>Telegram ID</label>
+              <input type="text" id="inp_telegram" value="{{user.telegram_id}}" placeholder="@username" class="finput">
+              <small class="muted">Bildirishnomalar uchun</small>
+            </div>
+          </div>
+          <div class="form-grp">
+            <label>Men haqimda</label>
+            <textarea id="inp_bio" rows="4" class="finput" placeholder="O'zingiz haqida qisqacha...">{{user.bio}}</textarea>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary-sm" onclick="saveProfile()">Saqlash</button>
+            <button class="btn-outline-sm" onclick="location.reload()">Bekor qilish</button>
+          </div>
+          <div id="save-msg" style="display:none; margin-top:10px; color:green;">
+            <i class="fa-solid fa-check"></i> Saqlandi!
+          </div>
+        </div>
+
+        <!-- O'ng panel -->
+        <div class="ps-cards">
+
+          <!-- Profil to'liqligi -->
+          <div class="ps-card">
+            <h4>Profil to'liqligi</h4>
+            <div class="completeness-pct">75%</div>
+            <div class="prog-bar">
+              <div class="prog-fill" style="width:75%"></div>
+            </div>
+            <ul class="tips-list">
+              <li><i class="fa-solid fa-circle-plus"></i> Ish tajribangizni qo'shing (+10%)</li>
+              <li><i class="fa-solid fa-circle-plus"></i> LinkedIn havolasini ulang (+5%)</li>
+            </ul>
+          </div>
+
+          <!-- Telegram bot -->
+          <div class="ps-card">
+            <h4>Telegram-bot</h4>
+            {{#if user.telegram_id}}
+            <div class="tg-status on">
+              <i class="fa-solid fa-circle"></i> Ulangan
+            </div>
+            <p class="muted small">{{user.telegram_id}}</p>
+            {{else}}
+            <div class="tg-status off">
+              <i class="fa-solid fa-circle"></i> Ulanmagan
+            </div>
+            {{/if}}
+            <a href="/telegram" class="btn-outline-sm mt8">Sozlamalarga o'tish</a>
+          </div>
+
+          <!-- Statistika -->
+          <div class="ps-card">
+            <h4>Statistika</h4>
+            <div class="stat-line">
+              <span>Topshirilgan arizalar</span>
+              <strong>{{applicationsCount}}</strong>
+            </div>
+            <div class="stat-line">
+              <span>Saqlangan vakansiyalar</span>
+              <strong>{{savedCount}}</strong>
+            </div>
+            <div class="stat-line">
+              <span>Profil ko'rishlari</span>
+              <strong>47</strong>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    async function saveProfile() {
+      const data = {
+        full_name: document.getElementById('inp_full_name').value,
+        position:  document.getElementById('inp_position').value,
+        email:     document.getElementById('inp_email').value,
+        phone:     document.getElementById('inp_phone').value,
+        city:      document.getElementById('inp_city').value,
+        telegram_id: document.getElementById('inp_telegram').value,
+        bio:       document.getElementById('inp_bio').value,
+      };
+      try {
+        const res = await fetch('/api/users/{{user.id}}', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (json.success || json.data) {
+          document.getElementById('save-msg').style.display = 'block';
+          setTimeout(() => document.getElementById('save-msg').style.display = 'none', 3000);
+        }
+      } catch (e) {
+        alert('Xatolik: ' + e.message);
+      }
+    }
+  </script>
+</body>
+</html>

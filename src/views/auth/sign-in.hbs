@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kirish | SmartJob</title>
+  <link rel="stylesheet" href="/public/css/auth.css">
+</head>
+<body>
+  <div class="auth-wrapper">
+    {{> auth-brand}}
+    <section class="auth-form-panel">
+      <form id="signInForm">
+        <h1>Kirish</h1>
+        <p class="subtitle">Hisobingizga kiring va arizalaringizni kuzating</p>
+        <div class="mb-3">
+          <label class="form-label">Email manzil</label>
+          <input type="email" name="email" class="form-control" placeholder="example@gmail.com" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Parol</label>
+          <div class="pw-wrap">
+            <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+            <button type="button" class="toggle-eye" onclick="togglePw(this)">👁️</button>
+          </div>
+        </div>
+        <div class="check-row">
+          <label>
+            <input type="checkbox" checked> Meni eslab qol
+          </label>
+          <a href="/auth/forgot-password" class="text-link">Parolni unutdingizmi?</a>
+        </div>
+        <button type="submit" class="btn-primary">Kirish</button>
+        <p class="text-center text-muted mt-3">
+          Hisobingiz yo'qmi? <a href="/auth/sign-up" class="text-link">Ro'yxatdan o'tish</a>
+        </p>
+      </form>
+    </section>
+  </div>
+  <script>
+    function togglePw(btn) {
+      const input = btn.previousElementSibling;
+      input.type = input.type === 'password' ? 'text' : 'password';
+    }
+
+    document.getElementById('signInForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      try {
+        const res = await fetch('/api/auth/sign-in', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email: data.email, password: data.password }),
+        });
+        const json = await res.json();
+        if (res.ok && json.success) {
+          window.location.href = '/';
+        } else {
+          const msg = Array.isArray(json.message) ? json.message.join(', ') : json.message;
+          alert(msg || 'Email yoki parol xato');
+        }
+      } catch (err) {
+        alert('Tarmoq xatosi');
+      }
+    });
+  </script>
+</body>
+</html>

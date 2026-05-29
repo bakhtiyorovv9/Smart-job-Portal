@@ -1,0 +1,33 @@
+<aside class="sidebar">
+  <div class="profile">
+    <div class="av">{{initials user.full_name}}</div>
+    <div>
+      <div class="name">{{user.full_name}}</div>
+      <div class="role">{{user.role}}</div>
+    </div>
+  </div>
+
+  <div class="section-title">Asosiy</div>
+  <a href="/" class="nav-link {{#if (eq active 'home')}}active{{/if}}">
+    <i class="fa-solid fa-house"></i> Bosh sahifa
+  </a>
+  <a href="/vacancies" class="nav-link {{#if (eq active 'vacancies')}}active{{/if}}">
+    <i class="fa-solid fa-briefcase"></i> Vakansiyalar
+  </a>
+
+  <div class="section-title">Mening kabinetim</div>
+  <a href="/my-applications" class="nav-link">
+    <i class="fa-solid fa-file-lines"></i> Mening arizalarim
+  </a>
+  <a href="/profile" class="nav-link">
+    <i class="fa-solid fa-user"></i> Profil
+  </a>
+
+  <div class="section-title">Tizim</div>
+  <a href="/telegram" class="nav-link">
+    <i class="fa-brands fa-telegram"></i> Telegram bot
+  </a>
+  <a href="/auth/logout" class="nav-link">
+  <i class="fa-solid fa-right-from-bracket"></i> Chiqish
+</a>
+</aside>

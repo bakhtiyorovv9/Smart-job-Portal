@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mening arizalarim | SmartJob</title>
+  <link rel="stylesheet" href="/public/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  {{> dash-topnav}}
+  <div class="layout">
+    {{> dash-sidebar}}
+    <main class="main-content">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Mening arizalarim</h1>
+          <p class="page-sub">{{total}} ta ariza topshirilgan</p>
+        </div>
+        <a href="/vacancies" class="btn-primary-sm">
+          <i class="fa-solid fa-plus"></i> Yangi ariza topshirish
+        </a>
+      </div>
+
+      <!-- Tabs -->
+      <div class="status-tabs">
+        <button class="stab active" data-filter="all">
+          Hammasi <span class="stab-count">{{total}}</span>
+        </button>
+        <button class="stab" data-filter="pending">Kutilmoqda</button>
+        <button class="stab" data-filter="reviewed">Ko'rib chiqilmoqda</button>
+        <button class="stab" data-filter="accepted">Qabul qilindi</button>
+        <button class="stab" data-filter="rejected">Rad etildi</button>
+      </div>
+
+      {{#if applications.length}}
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>VAKANSIYA</th>
+              <th>KOMPANIYA</th>
+              <th>HOLAT</th>
+              <th>REZYUME</th>
+              <th>TOPSHIRILDI</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each applications}}
+            <tr class="app-row" data-status="{{this.status}}">
+              <td>
+                <div class="td-title">{{this.vacancy.title}}</div>
+                <div class="td-sub">{{formatSalary this.vacancy.salary}}</div>
+              </td>
+              <td>
+                <div class="company-cell">
+                  <div class="co-av">{{initials this.vacancy.company.name}}</div>
+                  <span>{{this.vacancy.company.name}}</span>
+                </div>
+              </td>
+              <td>
+                <span class="sbadge sbadge-{{this.status}}">
+                  {{#if (eq this.status 'pending')}}Kutilmoqda{{/if}}
+                  {{#if (eq this.status 'reviewed')}}Ko'rib chiqilmoqda{{/if}}
+                  {{#if (eq this.status 'accepted')}}Qabul qilindi{{/if}}
+                  {{#if (eq this.status 'rejected')}}Rad etildi{{/if}}
+                </span>
+              </td>
+              <td>
+                {{#if this.resume}}
+                <a href="/uploads/{{this.resume}}" class="resume-dl" target="_blank">
+                  <i class="fa-solid fa-file-pdf"></i>
+                  <span>Rezyume.pdf</span>
+                </a>
+                {{else}}
+                <span class="muted">—</span>
+                {{/if}}
+              </td>
+              <td class="muted">{{timeAgo this.created_at}}</td>
+              <td><i class="fa-solid fa-chevron-right muted"></i></td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+      {{else}}
+      <div class="empty-box">
+        <i class="fa-solid fa-inbox fa-3x muted"></i>
+        <p>Hozircha arizalar yo'q.</p>
+        <a href="/vacancies" class="btn-primary-sm">Vakansiyalarni ko'rish</a>
+      </div>
+      {{/if}}
+
+      <!-- Telegram banner -->
+      <div class="tg-banner">
+        <div class="tg-banner-icon"><i class="fa-brands fa-telegram"></i></div>
+        <div>
+          <strong>Telegram orqali ariza holatini kuzating</strong>
+          <p>Har bir holat o'zgarishi haqida @SmartJobBot sizga xabar yuboradi.</p>
+        </div>
+      </div>
+
+    </main>
+  </div>
+  <script>
+    document.querySelectorAll('.stab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const f = btn.dataset.filter;
+        document.querySelectorAll('.app-row').forEach(row => {
+          row.style.display = (f === 'all' || row.dataset.status === f) ? '' : 'none';
+        });
+      });
+    });
+  </script>
+</body>
+</html>

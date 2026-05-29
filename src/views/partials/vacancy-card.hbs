@@ -1,0 +1,17 @@
+<a href="/vacancies/{{this.id}}" class="vac-card">
+  <div class="logo-box">{{initials this.company.name}}</div>
+  <div class="body">
+    <div class="title">{{this.title}}</div>
+    <div class="company">{{this.company.name}} · {{this.location}}</div>
+    <div class="meta">
+      <span>📍 {{this.location}}</span>
+    </div>
+    {{#if this.category}}
+      <span class="cat-tag">{{this.category.name}}</span>
+    {{/if}}
+  </div>
+  <div class="right">
+    <div class="salary">{{formatSalary this.salary}}</div>
+    <div class="time">{{timeAgo this.createdAt}}</div>
+  </div>
+</a>

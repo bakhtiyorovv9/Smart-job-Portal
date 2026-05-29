@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bosh sahifa | SmartJob</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="/public/css/dashboard.css">
+</head>
+<body>
+  {{> dash-topnav}}
+  <div class="layout">
+    {{> dash-sidebar}}
+    <main class="content">
+      <h1>So'nggi vakansiyalar</h1>
+      <p class="result-count">{{vacancies.length}} ta vakansiya</p>
+
+      {{#each vacancies}}
+        {{> vacancy-card}}
+      {{else}}
+        <p>Hozircha vakansiyalar yo'q.</p>
+      {{/each}}
+    </main>
+  </div>
+</body>
+</html>

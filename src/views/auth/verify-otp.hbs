@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Email tasdiqlash | SmartJob</title>
+  <link rel="stylesheet" href="/public/css/auth.css">
+</head>
+<body>
+  <div class="auth-wrapper">
+    <aside class="auth-brand">
+      <div class="auth-logo">
+        <div class="sj-icon">SJ</div>
+        <div>Smart<span class="orange">Job</span></div>
+      </div>
+      <div class="auth-quote">
+        <h2>Bir qadam qoldi! Email manzilingizni tasdiqlang va tizimdan to'liq foydalanishni boshlang.</h2>
+      </div>
+      <div class="auth-footer-text">
+        Xat 5 daqiqada kelmasa, spam papkasini tekshiring.
+      </div>
+    </aside>
+    <section class="auth-form-panel">
+      <form id="otpForm">
+        <div class="otp-icon">✉️</div>
+        <h1>Pochtangizni tasdiqlang</h1>
+        <p class="subtitle">
+          Biz <strong id="emailText"></strong> manziliga 6 raqamli kod yubordik
+        </p>
+        <div class="otp-inputs">
+          <input type="text" maxlength="1" inputmode="numeric" required>
+          <input type="text" maxlength="1" inputmode="numeric" required>
+          <input type="text" maxlength="1" inputmode="numeric" required>
+          <input type="text" maxlength="1" inputmode="numeric" required>
+          <input type="text" maxlength="1" inputmode="numeric" required>
+          <input type="text" maxlength="1" inputmode="numeric" required>
+        </div>
+        <button type="submit" class="btn-primary">Tasdiqlash</button>
+        <p class="text-muted mt-3">
+          Qayta yuborish <span id="timer">60</span> soniyadan keyin
+        </p>
+      </form>
+    </section>
+  </div>
+  <script>
+    // Email'ni URL'dan olish (?email=...)
+    const params = new URLSearchParams(window.location.search);
+    const email = params.get('email') || '';
+    document.getElementById('emailText').textContent = email;
+
+    // OTP input behavior
+    const inputs = document.querySelectorAll('.otp-inputs input');
+    inputs.forEach((input, idx) => {
+      input.addEventListener('input', () => {
+        input.value = input.value.replace(/\D/g, '');
+        if (input.value && idx < inputs.length - 1) inputs[idx + 1].focus();
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !input.value && idx > 0) inputs[idx - 1].focus();
+      });
+    });
+
+    // Timer
+    let sec = 60;
+    const timer = setInterval(() => {
+      sec--;
+      document.getElementById('timer').textContent = sec;
+      if (sec <= 0) {
+        clearInterval(timer);
+        document.getElementById('timer').textContent = '0';
+      }
+    }, 1000);
+
+    // Submit
+    document.getElementById('otpForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = [...inputs].map(i => i.value).join('');
+      try {
+        const res = await fetch('/api/auth/verify-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ email, code }),
+        });
+        const json = await res.json();
+        if (res.ok && json.success) {
+          window.location.href = '/';
+        } else {
+          alert(json.message || 'Kod noto\'g\'ri');
+        }
+      } catch (err) {
+        alert('Tarmoq xatosi');
+      }
+    });
+  </script>
+</body>
+</html>

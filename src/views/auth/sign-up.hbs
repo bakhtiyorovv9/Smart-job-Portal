@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Ro'yxatdan o'tish | SmartJob</title>
+  <link rel="stylesheet" href="/public/css/auth.css">
+</head>
+<body>
+  <div class="auth-wrapper">
+    {{> auth-brand}}
+    <section class="auth-form-panel">
+      <form id="signUpForm">
+        <h1>Ro'yxatdan o'tish</h1>
+        <p class="subtitle">Bir necha bosqich va tayyor!</p>
+        <label class="form-label">Sifatida ro'yxatdan o'tmoqchiman</label>
+        <div class="role-toggle">
+          <button type="button" class="active" data-role="candidate">Nomzod</button>
+          <button type="button" data-role="company">Kompaniya</button>
+        </div>
+        <input type="hidden" name="role" id="roleInput" value="candidate">
+        <div class="mb-3">
+          <label class="form-label" id="nameLabel">To'liq ism</label>
+          <input type="text" name="full_name" class="form-control" id="nameInput" placeholder="Ism familiya" required>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required>
+        </div>
+        <div class="row-2 mb-3">
+          <div>
+            <label class="form-label">Parol</label>
+            <input type="password" name="password" class="form-control" minlength="6" required>
+          </div>
+          <div>
+            <label class="form-label">Tasdiqlash</label>
+            <input type="password" name="password_confirm" class="form-control" minlength="6" required>
+          </div>
+        </div>
+        <div class="check-row">
+          <label>
+            <input type="checkbox" required> Foydalanish shartlariga roziman
+          </label>
+        </div>
+        <button type="submit" class="btn-primary">Ro'yxatdan o'tish</button>
+        <p class="text-center text-muted mt-3">
+          Hisobingiz bormi? <a href="/auth/sign-in" class="text-link">Kirish</a>
+        </p>
+      </form>
+    </section>
+  </div>
+  <script>
+    document.querySelectorAll('.role-toggle button').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.role-toggle button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const role = btn.dataset.role;
+        document.getElementById('roleInput').value = role;
+        const nameLabel = document.getElementById('nameLabel');
+        const nameInput = document.getElementById('nameInput');
+        if (role === 'company') {
+          nameLabel.textContent = 'Kompaniya nomi';
+          nameInput.placeholder = 'Masalan: Tech Corp';
+        } else {
+          nameLabel.textContent = "To'liq ism";
+          nameInput.placeholder = 'Ism familiya';
+        }
+      });
+    });
+
+    document.getElementById('signUpForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(e.target));
+      if (data.password !== data.password_confirm) {
+        return alert('Parollar mos kelmadi');
+      }
+      try {
+        const res = await fetch('/api/auth/sign-up', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (res.ok && json.success) {
+          window.location.href = `/auth/verify-otp?email=${encodeURIComponent(data.email)}`;
+        } else {
+          const msg = Array.isArray(json.message) ? json.message.join(', ') : json.message;
+          alert(msg || 'Xato yuz berdi');
+        }
+      } catch (err) {
+        alert('Tarmoq xatosi');
+      }
+    });
+  </script>
+</body>
+</html>
