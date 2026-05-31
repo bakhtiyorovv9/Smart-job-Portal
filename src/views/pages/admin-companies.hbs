@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kompaniyalar | SmartJob</title>
+  <link rel="stylesheet" href="/public/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  {{> dash-topnav}}
+  <div class="layout">
+    {{> dash-sidebar}}
+    <main class="main-content">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Kompaniyalar</h1>
+          <p class="page-sub">{{companies.length}} ta ro'yxatdan o'tgan kompaniya</p>
+        </div>
+      </div>
+
+      {{#if companies.length}}
+      <div class="company-grid">
+        {{#each companies}}
+        <div class="company-card" id="co-{{this.id}}">
+          <div class="company-card-head">
+            <div class="co-av-md">{{initials this.name}}</div>
+            <div class="company-card-title">
+              <h3>{{this.name}}</h3>
+              {{#if this.website}}<a href="{{this.website}}" target="_blank" class="co-web">{{this.website}}</a>{{/if}}
+            </div>
+          </div>
+          <p class="company-desc">{{this.description}}</p>
+          {{#if this.owner}}
+          <div class="company-owner">Egasi: <strong>{{this.owner.full_name}}</strong></div>
+          {{/if}}
+          <div class="company-card-foot">
+            <button class="btn-trash-sm" onclick="deleteCompany({{this.id}})">
+              <i class="fa-solid fa-trash"></i> O'chirish
+            </button>
+          </div>
+        </div>
+        {{/each}}
+      </div>
+      {{else}}
+      <div class="empty-box">
+        <i class="fa-solid fa-building fa-3x muted"></i>
+        <p>Hozircha kompaniyalar yo'q.</p>
+      </div>
+      {{/if}}
+
+    </main>
+  </div>
+  <script>
+    async function deleteCompany(id) {
+      if (!confirm("Kompaniyani o'chirmoqchimisiz?")) return;
+      try {
+        const res = await fetch(`/api/companies/${id}`, { method: 'DELETE', credentials: 'include' });
+        const json = await res.json();
+        if (json.success) document.getElementById(`co-${id}`).remove();
+        else alert(json.message || 'Xatolik');
+      } catch (e) { alert('Tarmoq xatosi'); }
+    }
+  </script>
+</body>
+</html>

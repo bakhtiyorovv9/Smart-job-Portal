@@ -74,4 +74,10 @@ export class CompaniesService {
     await company.destroy();
     return { success: true, message: `Company ${id} deleted` };
   }
+
+  async getByOwner(ownerId: number) {
+    const company = await this.model.findOne({ where: { owner_id: ownerId } });
+    return company;
+  }
+  
 }

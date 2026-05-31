@@ -20,7 +20,7 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { UserRole } from '@/core/constants/constants';
 import { ParseVacancyIdPipe } from '@/common/pipes/parse-vacancy-id.pipe';
 
-@Controller('vacancies')
+@Controller('api/vacancies')
 export class VacanciesController {
   constructor(private readonly service: VacanciesService) {}
 

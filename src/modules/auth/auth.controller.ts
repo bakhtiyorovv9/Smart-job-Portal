@@ -15,7 +15,8 @@ import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { ForgotPasswordDto } from './dtos/forgot-password.dto';
 import type { Request, Response } from 'express';
 import { VerifyOtpDto } from './dtos/verify-otp.dto';
-@Controller('auth')
+
+@Controller('api/auth')
 export class AuthController {
   constructor(private readonly service: AuthService) {}
 
@@ -67,7 +68,7 @@ export class AuthController {
   @Get('/logout')
   logoutPage(@Res() res: Response) {
     res.clearCookie('accessToken');
-    res.clearCookie('refreshToken');
+    res.clearCookie('RefreshToken');
     res.redirect('/auth/sign-in');
   }
 }

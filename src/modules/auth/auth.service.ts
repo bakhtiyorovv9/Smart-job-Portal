@@ -9,12 +9,12 @@ import { JwtService, JwtSignOptions } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import type { Request, Response } from 'express';
 import { User } from '../users/models/user.model';
+import { Company } from '../companies/models/company.model';
 import { MailService } from '../mail/mail.service';
 import { SignUpDto } from './dtos/sign-up.dto';
 import { SignInDto } from './dtos/sign-in.dto';
 import { ResetPasswordDto } from './dtos/reset-password.dto';
 import { UserRole } from '@/core/constants/constants';
-
 
 interface JwtPayload {
   id: string;
@@ -25,6 +25,7 @@ interface JwtPayload {
 export class AuthService {
   constructor(
     @InjectModel(User) private readonly userModel: typeof User,
+    @InjectModel(Company) private readonly companyModel: typeof Company,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly mailService: MailService,
@@ -43,7 +44,7 @@ export class AuthService {
     const hashedPass = await this.hashPass(payload.password);
 
     const otpCode = this.generateOtp();
-    const otpExpires = new Date(Date.now() + 5 * 60 * 1000); 
+    const otpExpires = new Date(Date.now() + 5 * 60 * 1000);
 
     const user = await this.userModel.create({
       ...payload,
@@ -51,6 +52,14 @@ export class AuthService {
       otp_code: otpCode,
       otp_expires: otpExpires,
     });
+
+    // Company role bo'lsa — kompaniya profili ham yaratiladi
+    if (user.role === UserRole.COMPANY) {
+      await this.companyModel.create({
+        name: user.full_name,
+        owner_id: user.id,
+      } as any);
+    }
 
     await this.mailService.sendOtp(user.email, user.full_name, otpCode);
 

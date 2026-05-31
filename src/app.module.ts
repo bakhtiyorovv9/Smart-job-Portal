@@ -1,4 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { ConfigModule } from '@nestjs/config';
 import { CommonModule } from './common/common.module';
@@ -14,6 +19,7 @@ import { User } from './modules/users/models/user.model';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { AuthMiddleware } from './common/middlewares/auth.middleware';
 import { SavedVacanciesModule } from './modules/saved-vacancies/saved-vacancies.module';
+import { SeedModule } from './seed/seed.module';
 
 @Module({
   imports: [
@@ -26,10 +32,19 @@ import { SavedVacanciesModule } from './modules/saved-vacancies/saved-vacancies.
       username: process.env.DB_USER || 'postgres',
       password: process.env.DB_PASS || 'postgres',
       database: process.env.DB_NAME || 'smart_job_portal',
+      dialectOptions: {
+        ssl: {
+          require: true,
+          rejectUnauthorized: false,
+        },
+      },
       logging: false,
-      autoLoadModels: true,
       synchronize: true,
-      sync: { alter: true },
+      sync: {
+        alter: true,
+        force: process.env.NODE_ENV === `development`,
+      },
+      autoLoadModels: true,
     }),
 
     SequelizeModule.forFeature([User]),
@@ -43,12 +58,18 @@ import { SavedVacanciesModule } from './modules/saved-vacancies/saved-vacancies.
     VacanciesModule,
     TelegramModule,
     PagesModule,
-    SavedVacanciesModule
+    SavedVacanciesModule,
+    SeedModule,
   ],
   controllers: [],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware, AuthMiddleware).forRoutes('*');
+    consumer
+      .apply(LoggerMiddleware, AuthMiddleware)
+      .forRoutes(
+        { path: '/', method: RequestMethod.ALL },
+        { path: '*splat', method: RequestMethod.ALL },
+      );
   }
 }

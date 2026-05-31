@@ -55,7 +55,15 @@
         });
         const json = await res.json();
         if (res.ok && json.success) {
-          window.location.href = '/';
+          // Role'ga qarab redirect
+          const role = json.data?.role;
+          if (role === 'admin') {
+            window.location.href = '/admin/users';
+          } else if (role === 'company') {
+            window.location.href = '/my-vacancies';
+          } else {
+            window.location.href = '/';
+          }
         } else {
           const msg = Array.isArray(json.message) ? json.message.join(', ') : json.message;
           alert(msg || 'Email yoki parol xato');

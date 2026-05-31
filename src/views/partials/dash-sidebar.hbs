@@ -7,6 +7,21 @@
     </div>
   </div>
 
+  {{#if (eq user.role 'admin')}}
+  <!-- ===== ADMIN: faqat boshqaruv ===== -->
+  <div class="section-title">Boshqaruv paneli</div>
+  <a href="/admin/users" class="nav-link {{#if (eq active 'admin-users')}}active{{/if}}">
+    <i class="fa-solid fa-users"></i> Foydalanuvchilar
+  </a>
+  <a href="/admin/companies" class="nav-link {{#if (eq active 'admin-companies')}}active{{/if}}">
+    <i class="fa-solid fa-building"></i> Kompaniyalar
+  </a>
+  <a href="/admin/categories" class="nav-link {{#if (eq active 'admin-categories')}}active{{/if}}">
+    <i class="fa-solid fa-table-cells-large"></i> Kategoriyalar
+  </a>
+
+  {{else}}
+  <!-- ===== CANDIDATE / COMPANY: Asosiy ===== -->
   <div class="section-title">Asosiy</div>
   <a href="/" class="nav-link {{#if (eq active 'home')}}active{{/if}}">
     <i class="fa-solid fa-house"></i> Bosh sahifa
@@ -15,19 +30,50 @@
     <i class="fa-solid fa-briefcase"></i> Vakansiyalar
   </a>
 
-  <div class="section-title">Mening kabinetim</div>
-  <a href="/my-applications" class="nav-link">
-    <i class="fa-solid fa-file-lines"></i> Mening arizalarim
-  </a>
-  <a href="/profile" class="nav-link">
-    <i class="fa-solid fa-user"></i> Profil
-  </a>
+    {{#if (eq user.role 'company')}}
+    <!-- COMPANY -->
+    <div class="section-title">Kompaniya kabineti</div>
+    <a href="/my-vacancies" class="nav-link {{#if (eq active 'my-vacancies')}}active{{/if}}">
+      <i class="fa-solid fa-layer-group"></i> Mening vakansiyalarim
+    </a>
+    <a href="/create-vacancy" class="nav-link {{#if (eq active 'create-vacancy')}}active{{/if}}">
+      <i class="fa-solid fa-plus"></i> Vakansiya yaratish
+    </a>
+    <a href="/company-applications" class="nav-link {{#if (eq active 'company-applications')}}active{{/if}}">
+      <i class="fa-solid fa-inbox"></i> Kelgan arizalar
+    </a>
+    {{else}}
+    <!-- CANDIDATE -->
+    <div class="section-title">Mening kabinetim</div>
+    <a href="/my-applications" class="nav-link {{#if (eq active 'my-applications')}}active{{/if}}">
+      <i class="fa-solid fa-file-lines"></i> Mening arizalarim
+    </a>
+    <a href="/saved-vacancies" class="nav-link {{#if (eq active 'saved-vacancies')}}active{{/if}}">
+      <i class="fa-solid fa-bookmark"></i> Saqlanganlar
+    </a>
+    <a href="/profile" class="nav-link {{#if (eq active 'profile')}}active{{/if}}">
+      <i class="fa-solid fa-user"></i> Profil
+    </a>
+    {{/if}}
+  {{/if}}
 
   <div class="section-title">Tizim</div>
   <a href="/telegram" class="nav-link">
     <i class="fa-brands fa-telegram"></i> Telegram bot
   </a>
-  <a href="/auth/logout" class="nav-link">
-  <i class="fa-solid fa-right-from-bracket"></i> Chiqish
-</a>
+  <a href="javascript:void(0)" class="nav-link" onclick="doLogout()">
+    <i class="fa-solid fa-right-from-bracket"></i> Chiqish
+  </a>
 </aside>
+
+<script>
+  async function doLogout() {
+    try {
+      await fetch('/api/auth/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (e) {}
+    window.location.href = '/auth/sign-in';
+  }
+</script>

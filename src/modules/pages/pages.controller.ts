@@ -6,13 +6,16 @@ import {
   Query,
   Render,
   Req,
+  Res,
 } from '@nestjs/common';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { VacanciesService } from '../vacancies/vacancies.service';
 import { CategoriesService } from '../categories/categories.service';
 import { ApplicationsService } from '../applications/applications.service';
 import { FilterVacancyDto } from '../vacancies/dto/filter-vacancy.dto';
 import { SavedVacanciesService } from '../saved-vacancies/saved-vacancies.service';
+import { CompaniesService } from '../companies/companies.service';
+import { UserService } from '../users/users.service';
 
 @Controller()
 export class PagesController {
@@ -21,6 +24,8 @@ export class PagesController {
     private readonly categoriesService: CategoriesService,
     private readonly applicationsService: ApplicationsService,
     private readonly savedVacanciesService: SavedVacanciesService,
+    private readonly companiesService: CompaniesService,
+    private readonly usersService: UserService,
   ) {}
 
   @Get()
@@ -107,5 +112,139 @@ export class PagesController {
       savedVacancies: res.data,
       user,
     };
+  }
+
+  @Get('my-vacancies')
+  @Render('pages/company-vacancies')
+  async companyVacancies(@Req() req: Request) {
+    const user = req.user || { full_name: 'Mehmon', role: 'company', id: 0 };
+    const company = user.id
+      ? await this.companiesService.getByOwner(user.id)
+      : null;
+
+    let vacancies: any[] = [];
+    if (company) {
+      const res = await this.vacanciesService.getByCompany(company.id);
+      vacancies = res.data || [];
+    }
+
+    const totalApplications = vacancies.reduce(
+      (sum, v) => sum + (v.applications?.length || 0),
+      0,
+    );
+    const activeCount = vacancies.filter((v) => v.is_active).length;
+
+    return {
+      active: 'my-vacancies',
+      user,
+      company,
+      vacancies,
+      stats: {
+        active: activeCount,
+        total: vacancies.length,
+        applications: totalApplications,
+      },
+    };
+  }
+
+  @Get('create-vacancy')
+  @Render('pages/create-vacancy')
+  async createVacancyPage(@Req() req: Request) {
+    const user = req.user || { full_name: 'Mehmon', role: 'company', id: 0 };
+    const company = user.id
+      ? await this.companiesService.getByOwner(user.id)
+      : null;
+    const cats = await this.categoriesService.getAll();
+    return {
+      active: 'create-vacancy',
+      user,
+      company,
+      categories: cats.data,
+    };
+  }
+
+  @Get('company-applications')
+  @Render('pages/company-applications')
+  async companyApplications(@Req() req: Request) {
+    const user = req.user || { full_name: 'Mehmon', role: 'company', id: 0 };
+    const company = user.id
+      ? await this.companiesService.getByOwner(user.id)
+      : null;
+
+    let vacancies: any[] = [];
+    let applications: any[] = [];
+    if (company) {
+      const vRes = await this.vacanciesService.getByCompany(company.id);
+      vacancies = vRes.data || [];
+      const aRes = await this.applicationsService.getByCompany(company.id);
+      applications = aRes.data || [];
+    }
+
+    return {
+      active: 'company-applications',
+      user,
+      company,
+      vacancies,
+      applications,
+    };
+  }
+
+  /* ===== ADMIN — faqat admin kira oladi ===== */
+
+  @Get('admin/users')
+  async adminUsers(@Req() req: Request, @Res() res: Response) {
+    const user = req.user;
+    if (!user || user.role !== 'admin') {
+      return res.redirect('/');
+    }
+    const usersRes = await this.usersService.getAll();
+    const users = usersRes.data || [];
+    const stats = {
+      total: users.length,
+      candidates: users.filter((u: any) => u.role === 'candidate').length,
+      companies: users.filter((u: any) => u.role === 'company').length,
+      admins: users.filter((u: any) => u.role === 'admin').length,
+    };
+    return res.render('pages/admin-users', {
+      active: 'admin-users',
+      user,
+      users,
+      stats,
+    });
+  }
+
+  @Get('admin/companies')
+  async adminCompanies(@Req() req: Request, @Res() res: Response) {
+    const user = req.user;
+    if (!user || user.role !== 'admin') {
+      return res.redirect('/');
+    }
+    const result = await this.companiesService.getAll();
+    return res.render('pages/admin-companies', {
+      active: 'admin-companies',
+      user,
+      companies: result.data,
+    });
+  }
+
+  @Get('admin/categories')
+  async adminCategories(@Req() req: Request, @Res() res: Response) {
+    const user = req.user;
+    if (!user || user.role !== 'admin') {
+      return res.redirect('/');
+    }
+    const result = await this.categoriesService.getAll();
+    return res.render('pages/admin-categories', {
+      active: 'admin-categories',
+      user,
+      categories: result.data,
+    });
+  }
+
+  @Get('telegram')
+  @Render('pages/telegram')
+  async telegramPage(@Req() req: Request) {
+    const user = req.user || { full_name: 'Mehmon', role: 'candidate', id: 0 };
+    return { active: 'telegram', user };
   }
 }

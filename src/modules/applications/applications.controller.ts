@@ -24,7 +24,7 @@ import { Roles } from '@/common/decorators/roles.decorator';
 import { UserRole } from '@/core/constants/constants';
 import { ResumeValidationPipe } from '@/common/pipes/resume-validation.pipe';
 
-@Controller('applications')
+@Controller('api/applications')
 export class ApplicationsController {
   constructor(private readonly service: ApplicationsService) {}
 

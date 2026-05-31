@@ -17,7 +17,7 @@ import { RolesGuard } from '@/common/guards/roles.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { UserRole } from '@/core/constants/constants';
 
-@Controller('companies')
+@Controller('api/companies')
 export class CompaniesController {
   constructor(private readonly service: CompaniesService) {}
 

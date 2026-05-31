@@ -6,7 +6,7 @@ import { RolesGuard } from '@/common/guards/roles.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { UserRole } from '@/core/constants/constants';
 
-@Controller('saved-vacancies')
+@Controller('api/saved-vacancies')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(UserRole.CANDIDATE)
 export class SavedVacanciesController {

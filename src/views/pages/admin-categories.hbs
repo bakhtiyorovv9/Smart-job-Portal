@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kategoriyalar | SmartJob</title>
+  <link rel="stylesheet" href="/public/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  {{> dash-topnav}}
+  <div class="layout">
+    {{> dash-sidebar}}
+    <main class="main-content">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Kategoriyalar</h1>
+          <p class="page-sub" id="cat-count">{{categories.length}} ta kategoriya</p>
+        </div>
+        <button class="btn-primary-sm" onclick="openCatModal()">
+          <i class="fa-solid fa-plus"></i> Kategoriya qo'shish
+        </button>
+      </div>
+
+      {{#if categories.length}}
+      <div class="cat-grid" id="cat-grid">
+        {{#each categories}}
+        <div class="cat-card" id="cat-{{this.id}}">
+          <div class="cat-card-head">
+            <div class="cat-icon"><i class="fa-solid fa-table-cells-large"></i></div>
+            <div class="cat-actions">
+              <button onclick="deleteCategory({{this.id}})"><i class="fa-solid fa-trash"></i></button>
+            </div>
+          </div>
+          <h3>{{this.name}}</h3>
+          <p class="muted small">{{#if this.vacancies}}{{this.vacancies.length}}{{else}}0{{/if}} ta vakansiya</p>
+        </div>
+        {{/each}}
+      </div>
+      {{else}}
+      <div class="empty-box">
+        <i class="fa-solid fa-table-cells-large fa-3x muted"></i>
+        <p>Hozircha kategoriyalar yo'q.</p>
+      </div>
+      {{/if}}
+
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="catModal" onclick="if(event.target.id==='catModal')closeCatModal()">
+    <div class="modal-box" style="max-width:400px;">
+      <div class="modal-head">
+        <h3>Yangi kategoriya</h3>
+        <button class="modal-close" onclick="closeCatModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grp">
+          <label>Kategoriya nomi</label>
+          <input type="text" id="catName" class="finput" placeholder="Masalan: Dasturlash">
+        </div>
+        <div id="cat-error" class="apply-error" style="display:none;"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-outline-sm" onclick="closeCatModal()">Bekor qilish</button>
+        <button class="btn-primary-sm" onclick="createCategory()">Qo'shish</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function openCatModal() { document.getElementById('catModal').style.display = 'flex'; }
+    function closeCatModal() {
+      document.getElementById('catModal').style.display = 'none';
+      document.getElementById('catName').value = '';
+      document.getElementById('cat-error').style.display = 'none';
+    }
+
+    async function createCategory() {
+      const name = document.getElementById('catName').value.trim();
+      const errEl = document.getElementById('cat-error');
+      if (!name) { errEl.textContent = 'Nom kiriting'; errEl.style.display = 'block'; return; }
+      try {
+        const res = await fetch('/api/categories', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ name }),
+        });
+        const json = await res.json();
+        if (res.ok && (json.success || json.data)) {
+          location.reload();
+        } else {
+          const msg = Array.isArray(json.message) ? json.message.join(', ') : json.message;
+          errEl.textContent = msg || 'Xatolik';
+          errEl.style.display = 'block';
+        }
+      } catch (e) { errEl.textContent = 'Tarmoq xatosi'; errEl.style.display = 'block'; }
+    }
+
+    async function deleteCategory(id) {
+      if (!confirm("Kategoriyani o'chirmoqchimisiz?")) return;
+      try {
+        const res = await fetch(`/api/categories/${id}`, { method: 'DELETE', credentials: 'include' });
+        const json = await res.json();
+        if (json.success) document.getElementById(`cat-${id}`).remove();
+        else alert(json.message || 'Xatolik');
+      } catch (e) { alert('Tarmoq xatosi'); }
+    }
+  </script>
+</body>
+</html>

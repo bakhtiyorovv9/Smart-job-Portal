@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mening vakansiyalarim | SmartJob</title>
+  <link rel="stylesheet" href="/public/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  {{> dash-topnav}}
+  <div class="layout">
+    {{> dash-sidebar}}
+    <main class="main-content">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Mening vakansiyalarim</h1>
+          <p class="page-sub">{{stats.active}} ta faol vakansiya</p>
+        </div>
+        <a href="/create-vacancy" class="btn-primary-sm">
+          <i class="fa-solid fa-plus"></i> Yangi vakansiya
+        </a>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="stat-cards">
+        <div class="stat-card">
+          <span class="stat-label">FAOL VAKANSIYALAR</span>
+          <span class="stat-value">{{stats.active}}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">JAMI VAKANSIYALAR</span>
+          <span class="stat-value">{{stats.total}}</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-label">TOPSHIRILGAN ARIZALAR</span>
+          <span class="stat-value">{{stats.applications}}</span>
+        </div>
+      </div>
+
+      {{#if vacancies.length}}
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>LAVOZIM</th>
+              <th>KATEGORIYA</th>
+              <th>MAOSH</th>
+              <th>ARIZALAR</th>
+              <th>E'LON QILINGAN</th>
+              <th>AMALLAR</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each vacancies}}
+            <tr id="vac-{{this.id}}">
+              <td>
+                <div class="td-title">{{this.title}}</div>
+                <div class="td-sub">{{this.location}}</div>
+              </td>
+              <td>
+                {{#if this.category}}
+                <span class="cat-pill">{{this.category.name}}</span>
+                {{else}}<span class="muted">—</span>{{/if}}
+              </td>
+              <td>{{formatSalary this.salary}}</td>
+              <td><span class="app-count">{{this.applications.length}}</span></td>
+              <td class="muted">{{timeAgo this.created_at}}</td>
+              <td>
+                <div class="row-actions">
+                  <a href="/company-applications" title="Arizalar"><i class="fa-solid fa-inbox"></i></a>
+                  <button onclick="toggleActive({{this.id}})" title="Yoqish/O'chirish"><i class="fa-solid fa-power-off"></i></button>
+                  <button onclick="deleteVacancy({{this.id}})" title="O'chirish"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+      {{else}}
+      <div class="empty-box">
+        <i class="fa-solid fa-layer-group fa-3x muted"></i>
+        <p>Hozircha vakansiyalar yo'q.</p>
+        <a href="/create-vacancy" class="btn-primary-sm">Birinchi vakansiyani yarating</a>
+      </div>
+      {{/if}}
+
+    </main>
+  </div>
+  <script>
+    async function deleteVacancy(id) {
+      if (!confirm("Vakansiyani o'chirmoqchimisiz?")) return;
+      try {
+        const res = await fetch(`/api/vacancies/${id}`, { method: 'DELETE', credentials: 'include' });
+        const json = await res.json();
+        if (json.success) document.getElementById(`vac-${id}`).remove();
+        else alert(json.message || 'Xatolik');
+      } catch (e) { alert('Tarmoq xatosi'); }
+    }
+    async function toggleActive(id) {
+      try {
+        const res = await fetch(`/api/vacancies/${id}/toggle`, { method: 'PATCH', credentials: 'include' });
+        const json = await res.json();
+        if (json.success) location.reload();
+      } catch (e) { alert('Tarmoq xatosi'); }
+    }
+  </script>
+</body>
+</html>

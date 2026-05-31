@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vakansiya yaratish | SmartJob</title>
+  <link rel="stylesheet" href="/public/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  {{> dash-topnav}}
+  <div class="layout">
+    {{> dash-sidebar}}
+    <main class="main-content">
+
+      <div class="breadcrumb">
+        <a href="/my-vacancies">Vakansiyalar</a>
+        <span>/</span>
+        <span>Yangi vakansiya</span>
+      </div>
+      <h1 class="page-title" style="margin-bottom:20px;">Yangi vakansiya yaratish</h1>
+
+      <!-- Steps -->
+      <div class="wizard-steps">
+        <div class="wstep active" data-step="1">
+          <span class="wnum">1</span> Asosiy ma'lumotlar
+        </div>
+        <div class="wstep" data-step="2">
+          <span class="wnum">2</span> Shartlar va maosh
+        </div>
+        <div class="wstep" data-step="3">
+          <span class="wnum">3</span> Tavsif va e'lon
+        </div>
+      </div>
+
+      <div class="wizard-card">
+        <!-- STEP 1 -->
+        <div class="wpanel" data-panel="1">
+          <h3>Asosiy ma'lumotlar</h3>
+          <div class="form-grp">
+            <label>Lavozim nomi *</label>
+            <input type="text" id="title" class="finput" placeholder="Senior Backend Developer">
+          </div>
+          <div class="form-row2">
+            <div class="form-grp">
+              <label>Kategoriya *</label>
+              <select id="category_id" class="finput">
+                <option value="">Tanlang...</option>
+                {{#each categories}}
+                <option value="{{this.id}}">{{this.name}}</option>
+                {{/each}}
+              </select>
+            </div>
+            <div class="form-grp">
+              <label>Lokatsiya</label>
+              <input type="text" id="location" class="finput" placeholder="Toshkent" value="Toshkent">
+            </div>
+          </div>
+          <div class="form-actions">
+            <button class="btn-primary-sm" onclick="nextStep(2)">Davom etish <i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+
+        <!-- STEP 2 -->
+        <div class="wpanel" data-panel="2" style="display:none;">
+          <h3>Shartlar va maosh</h3>
+          <div class="form-grp">
+            <label>Maosh (so'm)</label>
+            <input type="number" id="salary" class="finput" min="0" max="1000000000" placeholder="25000000">
+            <small class="muted">Bo'sh qoldirsangiz "Kelishilgan holda" deb ko'rsatiladi</small>
+          </div>
+          <div class="form-actions" style="justify-content:space-between;">
+            <button class="btn-outline-sm" onclick="prevStep(1)"><i class="fa-solid fa-chevron-left"></i> Orqaga</button>
+            <button class="btn-primary-sm" onclick="nextStep(3)">Davom etish <i class="fa-solid fa-chevron-right"></i></button>
+          </div>
+        </div>
+
+        <!-- STEP 3 -->
+        <div class="wpanel" data-panel="3" style="display:none;">
+          <h3>Tavsif va e'lon</h3>
+          <div class="form-grp">
+            <label>Vakansiya tavsifi *</label>
+            <textarea id="description" rows="8" class="finput" placeholder="Vazifalar, talablar, texnologiyalar haqida batafsil yozing..."></textarea>
+          </div>
+          <div id="cv-error" class="apply-error" style="display:none;"></div>
+          <div class="form-actions" style="justify-content:space-between;">
+            <button class="btn-outline-sm" onclick="prevStep(2)"><i class="fa-solid fa-chevron-left"></i> Orqaga</button>
+            <button class="btn-primary-sm" id="publishBtn" onclick="publishVacancy()">
+              <i class="fa-solid fa-check"></i> E'lon qilish
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    const companyId = {{#if company}}{{company.id}}{{else}}0{{/if}};
+
+    function goStep(n) {
+      document.querySelectorAll('.wpanel').forEach(p => p.style.display = 'none');
+      document.querySelector(`[data-panel="${n}"]`).style.display = 'block';
+      document.querySelectorAll('.wstep').forEach(s => {
+        s.classList.toggle('active', Number(s.dataset.step) <= n);
+      });
+    }
+    function nextStep(n) {
+      if (n === 2 && !document.getElementById('title').value.trim()) {
+        return alert('Lavozim nomini kiriting');
+      }
+      if (n === 2 && !document.getElementById('category_id').value) {
+        return alert('Kategoriyani tanlang');
+      }
+      goStep(n);
+    }
+    function prevStep(n) { goStep(n); }
+
+    async function publishVacancy() {
+      const errEl = document.getElementById('cv-error');
+      const btn = document.getElementById('publishBtn');
+      errEl.style.display = 'none';
+
+      const data = {
+        title: document.getElementById('title').value.trim(),
+        description: document.getElementById('description').value.trim(),
+        location: document.getElementById('location').value.trim(),
+        category_id: Number(document.getElementById('category_id').value),
+        company_id: companyId,
+      };
+      const salary = document.getElementById('salary').value;
+      if (salary) data.salary = Number(salary);
+
+      if (!data.description || data.description.length < 10) {
+        errEl.textContent = 'Tavsif kamida 10 ta belgidan iborat bo\'lsin';
+        errEl.style.display = 'block';
+        return;
+      }
+      if (!companyId) {
+        errEl.textContent = 'Kompaniya topilmadi. Avval kompaniya profilini to\'ldiring.';
+        errEl.style.display = 'block';
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Yuborilmoqda...';
+      try {
+        const res = await fetch('/api/vacancies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (res.ok && (json.success || json.data)) {
+          window.location.href = '/my-vacancies';
+        } else {
+          const msg = Array.isArray(json.message) ? json.message.join(', ') : json.message;
+          errEl.textContent = msg || 'Xatolik';
+          errEl.style.display = 'block';
+          btn.disabled = false;
+          btn.innerHTML = '<i class="fa-solid fa-check"></i> E\'lon qilish';
+        }
+      } catch (e) {
+        errEl.textContent = 'Tarmoq xatosi';
+        errEl.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> E\'lon qilish';
+      }
+    }
+  </script>
+</body>
+</html>

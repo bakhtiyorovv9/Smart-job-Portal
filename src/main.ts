@@ -14,20 +14,6 @@ import { ResponseTransformInterceptor } from './common/interceptors/response-tra
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.setGlobalPrefix('api', {
-    exclude: [
-      { path: '/', method: RequestMethod.GET },
-      { path: 'vacancies', method: RequestMethod.GET },
-      { path: 'vacancies/:id', method: RequestMethod.GET },
-      { path: 'my-applications', method: RequestMethod.GET },
-      { path: 'profile', method: RequestMethod.GET },
-      { path: 'saved-vacancies', method: RequestMethod.GET },
-      { path: 'auth/sign-in', method: RequestMethod.GET },
-      { path: 'auth/sign-up', method: RequestMethod.GET },
-      { path: 'auth/verify-otp', method: RequestMethod.GET },
-      { path: 'auth/logout', method: RequestMethod.GET },
-    ],
-  });
 
   app.useStaticAssets(join(process.cwd(), 'public'), { prefix: '/public/' });
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads/' });

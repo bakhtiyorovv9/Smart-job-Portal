@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kelgan arizalar | SmartJob</title>
+  <link rel="stylesheet" href="/public/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  {{> dash-topnav}}
+  <div class="layout">
+    {{> dash-sidebar}}
+    <main class="main-content">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Kelgan arizalar</h1>
+          <p class="page-sub">Vakansiyalar bo'yicha nomzodlarni ko'rib chiqing</p>
+        </div>
+      </div>
+
+      <div class="apps-layout">
+        <!-- Chap: vakansiyalar ro'yxati -->
+        <div class="apps-vac-list">
+          <h4>Vakansiyalar</h4>
+          {{#each vacancies}}
+          <button class="vac-pick {{#if @first}}active{{/if}}" data-vid="{{this.id}}" onclick="selectVacancy({{this.id}}, this)">
+            <span>{{this.title}}</span>
+            <span class="vac-pick-count">{{this.applications.length}}</span>
+          </button>
+          {{/each}}
+        </div>
+
+        <!-- O'ng: arizalar -->
+        <div class="apps-detail">
+          <div class="status-tabs">
+            <button class="stab active" data-filter="all">Hammasi</button>
+            <button class="stab" data-filter="pending">Kutilmoqda</button>
+            <button class="stab" data-filter="reviewed">Ko'rib chiqilmoqda</button>
+            <button class="stab" data-filter="accepted">Qabul qilindi</button>
+            <button class="stab" data-filter="rejected">Rad etildi</button>
+          </div>
+
+          <div id="apps-container">
+            {{#each applications}}
+            <div class="app-item" data-vid="{{this.vacancy.id}}" data-status="{{this.status}}" id="app-{{this.id}}">
+              <div class="co-av">{{initials this.user.full_name}}</div>
+              <div class="app-item-info">
+                <div class="app-name">{{this.user.full_name}}</div>
+                <div class="app-email muted">{{this.user.email}}</div>
+                <div class="app-meta">
+                  <span class="sbadge sbadge-{{this.status}}">
+                    {{#if (eq this.status 'pending')}}Kutilmoqda{{/if}}
+                    {{#if (eq this.status 'reviewed')}}Ko'rib chiqilmoqda{{/if}}
+                    {{#if (eq this.status 'accepted')}}Qabul qilindi{{/if}}
+                    {{#if (eq this.status 'rejected')}}Rad etildi{{/if}}
+                  </span>
+                  <span class="muted small">{{timeAgo this.created_at}}</span>
+                </div>
+              </div>
+              <div class="app-actions">
+                {{#if this.resume}}
+                <a href="/uploads/{{this.resume}}" target="_blank" class="btn-outline-sm">
+                  <i class="fa-solid fa-file-pdf"></i> Rezyume
+                </a>
+                {{/if}}
+                <button class="btn-accept" onclick="setStatus({{this.id}}, 'accepted')">
+                  <i class="fa-solid fa-check"></i> Qabul
+                </button>
+                <button class="btn-reject" onclick="setStatus({{this.id}}, 'rejected')">
+                  <i class="fa-solid fa-xmark"></i> Rad
+                </button>
+              </div>
+            </div>
+            {{/each}}
+          </div>
+
+          <div id="no-apps" class="empty-box" style="display:none;">
+            <i class="fa-solid fa-inbox fa-2x muted"></i>
+            <p>Bu vakansiyaga arizalar yo'q.</p>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    let currentVid = {{#if vacancies.length}}{{vacancies.0.id}}{{else}}0{{/if}};
+    let currentStatus = 'all';
+
+    function applyFilters() {
+      let visible = 0;
+      document.querySelectorAll('.app-item').forEach(item => {
+        const vidMatch = !currentVid || Number(item.dataset.vid) === currentVid;
+        const statusMatch = currentStatus === 'all' || item.dataset.status === currentStatus;
+        const show = vidMatch && statusMatch;
+        item.style.display = show ? 'flex' : 'none';
+        if (show) visible++;
+      });
+      document.getElementById('no-apps').style.display = visible ? 'none' : 'block';
+    }
+
+    function selectVacancy(vid, btn) {
+      currentVid = vid;
+      document.querySelectorAll('.vac-pick').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    }
+
+    document.querySelectorAll('.stab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        currentStatus = btn.dataset.filter;
+        applyFilters();
+      });
+    });
+
+    async function setStatus(appId, status) {
+      try {
+        const res = await fetch(`/api/applications/${appId}/status`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ status }),
+        });
+        const json = await res.json();
+        if (json.success || json.data) {
+          location.reload();
+        } else {
+          alert(json.message || 'Xatolik');
+        }
+      } catch (e) { alert('Tarmoq xatosi'); }
+    }
+
+    applyFilters();
+  </script>
+</body>
+</html>

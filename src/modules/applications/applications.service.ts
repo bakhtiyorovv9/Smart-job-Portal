@@ -132,4 +132,15 @@ export class ApplicationsService {
     await application.destroy();
     return { success: true, message: `Application ${id} deleted` };
   }
+
+  async getByCompany(companyId: number) {
+    const apps = await this.model.findAll({
+      include: [
+        { model: User, attributes: { exclude: ['password'] } },
+        { model: Vacancy, where: { company_id: companyId } },
+      ],
+      order: [['created_at', 'DESC']],
+    });
+    return { success: true, data: apps };
+  }
 }

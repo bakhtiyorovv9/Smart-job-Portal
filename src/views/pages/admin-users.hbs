@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Foydalanuvchilar | SmartJob</title>
+  <link rel="stylesheet" href="/public/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  {{> dash-topnav}}
+  <div class="layout">
+    {{> dash-sidebar}}
+    <main class="main-content">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Foydalanuvchilar</h1>
+          <p class="page-sub">{{stats.total}} ta ro'yxatdan o'tgan foydalanuvchi</p>
+        </div>
+      </div>
+
+      <!-- Stat cards -->
+      <div class="stat-cards" style="grid-template-columns:repeat(4,1fr);">
+        <div class="stat-card"><span class="stat-label">JAMI</span><span class="stat-value">{{stats.total}}</span></div>
+        <div class="stat-card"><span class="stat-label">NOMZODLAR</span><span class="stat-value">{{stats.candidates}}</span></div>
+        <div class="stat-card"><span class="stat-label">KOMPANIYALAR</span><span class="stat-value">{{stats.companies}}</span></div>
+        <div class="stat-card"><span class="stat-label">ADMINLAR</span><span class="stat-value">{{stats.admins}}</span></div>
+      </div>
+
+      <!-- Tabs + search -->
+      <div class="status-tabs" style="justify-content:flex-start;">
+        <button class="stab active" data-filter="all">Hammasi <span class="stab-count">{{stats.total}}</span></button>
+        <button class="stab" data-filter="candidate">Nomzodlar</button>
+        <button class="stab" data-filter="company">Kompaniyalar</button>
+        <button class="stab" data-filter="admin">Adminlar</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>F.I.O</th>
+              <th>EMAIL</th>
+              <th>ROLI</th>
+              <th>TELEGRAM</th>
+              <th>HOLAT</th>
+              <th>QO'SHILGAN</th>
+              <th>AMALLAR</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{#each users}}
+            <tr class="user-row" data-role="{{this.role}}" id="user-{{this.id}}">
+              <td>
+                <div class="company-cell">
+                  <div class="co-av">{{initials this.full_name}}</div>
+                  <span>{{this.full_name}}</span>
+                </div>
+              </td>
+              <td class="muted">{{this.email}}</td>
+              <td><span class="role-pill role-{{this.role}}">{{this.role}}</span></td>
+              <td class="muted">{{#if this.telegram_id}}{{this.telegram_id}}{{else}}—{{/if}}</td>
+              <td>
+                {{#if this.is_active}}
+                <span class="dot-status on"><i class="fa-solid fa-circle"></i> Faol</span>
+                {{else}}
+                <span class="dot-status off"><i class="fa-solid fa-circle"></i> Bloklangan</span>
+                {{/if}}
+              </td>
+              <td class="muted">{{this.created_at}}</td>
+              <td>
+                <div class="row-actions">
+                  <button onclick="deleteUser({{this.id}})" title="O'chirish"><i class="fa-solid fa-trash"></i></button>
+                </div>
+              </td>
+            </tr>
+            {{/each}}
+          </tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+  <script>
+    document.querySelectorAll('.stab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const f = btn.dataset.filter;
+        document.querySelectorAll('.user-row').forEach(row => {
+          row.style.display = (f === 'all' || row.dataset.role === f) ? '' : 'none';
+        });
+      });
+    });
+
+    async function deleteUser(id) {
+      if (!confirm("Foydalanuvchini o'chirmoqchimisiz?")) return;
+      try {
+        const res = await fetch(`/api/users/${id}`, { method: 'DELETE', credentials: 'include' });
+        const json = await res.json();
+        if (json.success) document.getElementById(`user-${id}`).remove();
+        else alert(json.message || 'Xatolik');
+      } catch (e) { alert('Tarmoq xatosi'); }
+    }
+  </script>
+</body>
+</html>

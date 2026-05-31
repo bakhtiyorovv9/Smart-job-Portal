@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Telegram bot | SmartJob</title>
+  <link rel="stylesheet" href="/public/css/dashboard.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+  {{> dash-topnav}}
+  <div class="layout">
+    {{> dash-sidebar}}
+    <main class="main-content">
+
+      <div class="page-header">
+        <div>
+          <h1 class="page-title">Telegram bot</h1>
+          <p class="page-sub">@Smart_portal_job_bot — yangi vakansiyalar, ariza holati va kunlik hisobotlar</p>
+        </div>
+        <span class="online-badge"><i class="fa-solid fa-circle"></i> Online</span>
+      </div>
+
+      <div class="tg-layout">
+
+        <!-- Chap: Bot preview -->
+        <div class="tg-phone">
+          <div class="tg-phone-head">
+            <div class="tg-bot-av"><i class="fa-brands fa-telegram"></i></div>
+            <div>
+              <div class="tg-bot-name">SmartJob Bot</div>
+              <div class="tg-bot-status">bot · onlayn</div>
+            </div>
+          </div>
+          <div class="tg-phone-body">
+            <div class="tg-msg bot">
+              <strong>Sizning arizalaringiz</strong><br>
+              📋 Jami: 4 ta<br><br>
+              • Senior NestJS Backend — 🟡 Kutilmoqda<br>
+              • Frontend Developer — ✅ Qabul qilindi<br>
+              • DevOps Engineer — ❌ Rad etildi<br>
+              • Data Analyst — 🔵 Ko'rib chiqilmoqda
+              <div class="tg-time">10:27</div>
+            </div>
+            <div class="tg-msg user">
+              /myapplications
+              <div class="tg-time">10:27</div>
+            </div>
+            <div class="tg-msg bot">
+              🎉 <strong>Yangilik</strong><br>
+              "Frontend Developer (React)" arizangiz holati o'zgardi:<br><br>
+              Kutilmoqda → ✅ Qabul qilindi
+              <div class="tg-time">10:31</div>
+            </div>
+          </div>
+          <div class="tg-phone-input">
+            <i class="fa-solid fa-paperclip"></i>
+            <span>Buyruq yozing (masalan, /jobs)</span>
+            <i class="fa-solid fa-paper-plane"></i>
+          </div>
+        </div>
+
+        <!-- O'ng: Ma'lumot -->
+        <div class="tg-side">
+
+          <!-- Buyruqlar -->
+          <div class="tg-card">
+            <h4>📋 Buyruqlar</h4>
+            <div class="tg-cmd"><code>/start</code> <span>Botni boshlash</span></div>
+            <div class="tg-cmd"><code>/jobs</code> <span>Yangi vakansiyalar</span></div>
+            <div class="tg-cmd"><code>/myapplications</code> <span>Mening arizalarim</span></div>
+            <div class="tg-cmd"><code>/help</code> <span>Yordam</span></div>
+          </div>
+
+          <!-- Bildirishnomalar -->
+          <div class="tg-card">
+            <h4>🔔 Bildirishnomalar</h4>
+            <div class="tg-notif"><span>Yangi vakansiyalar</span> <span class="tg-on">Yoniq</span></div>
+            <div class="tg-notif"><span>Ariza holati o'zgarishi</span> <span class="tg-on">Yoniq</span></div>
+            <div class="tg-notif"><span>Kunlik hisobot (09:00)</span> <span class="tg-on">Yoniq</span></div>
+          </div>
+
+          <!-- Texnologiya -->
+          <div class="tg-card tg-tech">
+            <h4>⚙️ Texnologiya</h4>
+            <p>Telegraf.js + NestJS module orqali yozilgan. Long polling rejimida ishlaydi.</p>
+          </div>
+
+          <!-- Botga ulanish -->
+          <div class="tg-card">
+            <h4>🔗 Ulanish</h4>
+            <p class="muted small">Botni ishga tushiring va Telegram ID'ingizni profilingizga qo'shing.</p>
+            <a href="https://t.me/Smart_portal_job_bot" target="_blank" class="btn-primary-sm" style="margin-top:10px; display:inline-flex;">
+              <i class="fa-brands fa-telegram"></i> Botni ochish
+            </a>
+          </div>
+
+        </div>
+      </div>
+
+    </main>
+  </div>
+</body>
+</html>
