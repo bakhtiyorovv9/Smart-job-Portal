@@ -35,10 +35,11 @@ export class CreateVacancyDto {
   @MaxLength(100)
   location?: string;
 
+  @IsOptional()
   @Type(() => Number)
   @IsInt({ message: 'company_id raqam bo\u2018lishi kerak' })
   @Min(1)
-  company_id!: number;
+  company_id?: number;
 
   @Type(() => Number)
   @IsInt({ message: 'category_id raqam bo\u2018lishi kerak' })

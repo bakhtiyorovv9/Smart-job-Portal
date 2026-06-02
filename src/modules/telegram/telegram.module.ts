@@ -17,9 +17,13 @@ import { TelegramUpdate } from './telegram.update';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         const proxy = config.get<string>('TELEGRAM_PROXY');
+        const useProxy =
+          proxy &&
+          proxy.startsWith('socks') &&
+          !proxy.includes('your-proxy-host');
         return {
           token: config.getOrThrow<string>('BOT_TOKEN'),
-          ...(proxy && {
+          ...(useProxy && {
             telegram: {
               agent: new SocksProxyAgent(proxy),
             },

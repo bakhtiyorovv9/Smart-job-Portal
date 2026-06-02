@@ -88,11 +88,34 @@
 
           <!-- Botga ulanish -->
           <div class="tg-card">
-            <h4>🔗 Ulanish</h4>
-            <p class="muted small">Botni ishga tushiring va Telegram ID'ingizni profilingizga qo'shing.</p>
-            <a href="https://t.me/Smart_portal_job_bot" target="_blank" class="btn-primary-sm" style="margin-top:10px; display:inline-flex;">
+            <h4>🔗 Akkountni ulash</h4>
+
+            {{#if user.telegram_id}}
+            <div class="tg-status on" style="margin-bottom:10px;">
+              <i class="fa-solid fa-circle-check"></i> Ulangan
+            </div>
+            <p class="muted small">Sizning Chat ID: <code>{{user.telegram_id}}</code></p>
+            <button class="btn-outline-sm" style="margin-top:10px;" onclick="disconnectTg()">
+              <i class="fa-solid fa-link-slash"></i> Uzish
+            </button>
+            {{else}}
+            <ol class="tg-steps">
+              <li>Botni oching va <code>/start</code> bosing</li>
+              <li>Bot bergan <strong>Chat ID</strong> (raqam) ni nusxalang</li>
+              <li>Pastga joylashtirib "Ulash" tugmasini bosing</li>
+            </ol>
+            <a href="https://t.me/Smart_portal_job_bot" target="_blank" class="btn-primary-sm" style="margin:8px 0; display:inline-flex;">
               <i class="fa-brands fa-telegram"></i> Botni ochish
             </a>
+            <div class="form-grp" style="margin-top:8px;">
+              <input type="text" id="tgChatId" class="finput" placeholder="Masalan: 123456789" inputmode="numeric">
+            </div>
+            <button class="btn-primary-sm" onclick="connectTg()">
+              <i class="fa-solid fa-link"></i> Ulash
+            </button>
+            {{/if}}
+
+            <div id="tg-msg" style="display:none; margin-top:10px; font-size:14px;"></div>
           </div>
 
         </div>
@@ -100,5 +123,61 @@
 
     </main>
   </div>
+
+  <script>
+    const TG_USER_ID = parseInt('{{#if user.id}}{{user.id}}{{else}}0{{/if}}', 10) || 0;
+
+    async function connectTg() {
+      const val = document.getElementById('tgChatId').value.trim();
+      const msg = document.getElementById('tg-msg');
+      msg.style.display = 'block';
+
+      if (!/^\d{5,15}$/.test(val)) {
+        msg.style.color = '#dc2626';
+        msg.textContent = "Chat ID faqat raqamlardan iborat bo'lishi kerak. Botdan /start orqali oling.";
+        return;
+      }
+      try {
+        const res = await fetch('/api/users/' + TG_USER_ID, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ telegram_id: val }),
+        });
+        const json = await res.json();
+        if (res.ok && (json.success || json.data)) {
+          msg.style.color = '#15803d';
+          msg.textContent = '✅ Ulandi! Botda /myapplications yoki /jobs yozib tekshiring.';
+          setTimeout(() => location.reload(), 1300);
+        } else {
+          msg.style.color = '#dc2626';
+          msg.textContent = Array.isArray(json.message) ? json.message.join(', ') : (json.message || 'Xatolik');
+        }
+      } catch (e) {
+        msg.style.color = '#dc2626';
+        msg.textContent = 'Tarmoq xatosi';
+      }
+    }
+
+    async function disconnectTg() {
+      if (!confirm('Telegram akkountni uzmoqchimisiz?')) return;
+      try {
+        await fetch('/api/users/' + TG_USER_ID, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ telegram_id: '' }),
+        });
+        location.reload();
+      } catch (e) {}
+    }
+  </script>
+
+  <style>
+    .tg-steps { margin:6px 0 4px; padding-left:18px; color:#374151; font-size:14px; line-height:1.8; }
+    .tg-steps code { background:#eef2ff; padding:1px 6px; border-radius:5px; }
+    .tg-status.on { color:#15803d; font-weight:600; }
+    .tg-status.off { color:#dc2626; font-weight:600; }
+  </style>
 </body>
 </html>

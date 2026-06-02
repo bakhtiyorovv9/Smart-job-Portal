@@ -1,13 +1,25 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Op } from 'sequelize';
 import { Vacancy } from './models/vacancy.model';
 import { Company } from '../companies/models/company.model';
 import { Category } from '../categories/models/category.model';
 import { Application } from '../applications/models/application.model';
+import { CompaniesService } from '../companies/companies.service';
+import { TelegramService } from '../telegram/telegram.service';
+import { UserRole } from '@/core/constants/constants';
 import { CreateVacancyDto } from './dto/create-vacancy.dto';
 import { UpdateVacancyDto } from './dto/update-vacancy.dto';
 import { FilterVacancyDto } from './dto/filter-vacancy.dto';
+
+interface AuthUser {
+  id: number | string;
+  role: UserRole;
+}
 
 @Injectable()
 export class VacanciesService {
@@ -15,12 +27,27 @@ export class VacanciesService {
     @InjectModel(Vacancy) private readonly model: typeof Vacancy,
     @InjectModel(Company) private readonly companyModel: typeof Company,
     @InjectModel(Category) private readonly categoryModel: typeof Category,
+    private readonly companiesService: CompaniesService,
+    private readonly telegramService: TelegramService,
   ) {}
 
-  async create(dto: CreateVacancyDto) {
-    const company = await this.companyModel.findByPk(dto.company_id);
-    if (!company) {
-      throw new NotFoundException(`Company ${dto.company_id} not found`);
+  async create(dto: CreateVacancyDto, user: AuthUser) {
+    let companyId: number;
+
+    if (user.role === UserRole.COMPANY) {
+      const company = await this.companiesService.getOrCreateByOwner(
+        Number(user.id),
+      );
+      companyId = company.id;
+    } else {
+      if (!dto.company_id) {
+        throw new BadRequestException('company_id majburiy');
+      }
+      const company = await this.companyModel.findByPk(dto.company_id);
+      if (!company) {
+        throw new NotFoundException(`Company ${dto.company_id} not found`);
+      }
+      companyId = dto.company_id;
     }
 
     const category = await this.categoryModel.findByPk(dto.category_id);
@@ -28,7 +55,15 @@ export class VacanciesService {
       throw new NotFoundException(`Category ${dto.category_id} not found`);
     }
 
-    const vacancy = await this.model.create(dto);
+    const vacancy = await this.model.create({
+      ...dto,
+      company_id: companyId,
+    });
+
+    this.telegramService
+      .notifyNewJob(vacancy)
+      .catch(() => undefined);
+
     return {
       success: true,
       message: 'Vacancy created successfully',

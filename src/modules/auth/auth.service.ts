@@ -53,7 +53,6 @@ export class AuthService {
       otp_expires: otpExpires,
     });
 
-    // Company role bo'lsa — kompaniya profili ham yaratiladi
     if (user.role === UserRole.COMPANY) {
       await this.companyModel.create({
         name: user.full_name,
@@ -125,7 +124,7 @@ export class AuthService {
       });
     } catch {
       throw new UnauthorizedException(
-        'Yaroqsiz yoki muddati o\u2018tgan token',
+        'Yaroqsiz yoki muddati otgan token',
       );
     }
 

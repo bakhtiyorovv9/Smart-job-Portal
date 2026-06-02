@@ -79,5 +79,26 @@ export class CompaniesService {
     const company = await this.model.findOne({ where: { owner_id: ownerId } });
     return company;
   }
-  
+
+  async getOrCreateByOwner(ownerId: number) {
+    const existing = await this.model.findOne({
+      where: { owner_id: ownerId },
+    });
+    if (existing) {
+      return existing;
+    }
+
+    const owner = await this.userModel.findByPk(ownerId);
+    if (!owner) {
+      throw new NotFoundException(`Owner with id ${ownerId} not found`);
+    }
+
+    let name = owner.full_name?.trim() || `Kompaniya #${ownerId}`;
+    const nameTaken = await this.model.findOne({ where: { name } });
+    if (nameTaken) {
+      name = `${name} (#${ownerId})`;
+    }
+
+    return this.model.create({ name, owner_id: ownerId } as any);
+  }
 }

@@ -31,6 +31,7 @@ export class TelegramService {
       `📝 ${vacancy.description?.substring(0, 150)}...`;
 
     for (const user of users) {
+      if (!user.telegram_id) continue;
       try {
         await this.bot.telegram.sendMessage(user.telegram_id, message, {
           parse_mode: 'Markdown',
@@ -103,6 +104,7 @@ export class TelegramService {
     });
 
     for (const user of users) {
+      if (!user.telegram_id) continue;
       try {
         await this.bot.telegram.sendMessage(user.telegram_id, message, {
           parse_mode: 'Markdown',

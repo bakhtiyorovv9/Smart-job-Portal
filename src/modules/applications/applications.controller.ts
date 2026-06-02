@@ -23,6 +23,7 @@ import { RolesGuard } from '@/common/guards/roles.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { UserRole } from '@/core/constants/constants';
 import { ResumeValidationPipe } from '@/common/pipes/resume-validation.pipe';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 @Controller('api/applications')
 export class ApplicationsController {
@@ -54,8 +55,9 @@ export class ApplicationsController {
   async create(
     @Body() payload: CreateApplicationDto,
     @UploadedFile(ResumeValidationPipe) resume: Express.Multer.File,
+    @CurrentUser('id') userId: number,
   ) {
-    return this.service.create(payload, resume);
+    return this.service.create(payload, userId, resume);
   }
 
   @Get()

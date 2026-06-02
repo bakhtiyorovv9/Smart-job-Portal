@@ -19,6 +19,7 @@ import { RolesGuard } from '@/common/guards/roles.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { UserRole } from '@/core/constants/constants';
 import { ParseVacancyIdPipe } from '@/common/pipes/parse-vacancy-id.pipe';
+import { CurrentUser } from '@/common/decorators/current-user.decorator';
 
 @Controller('api/vacancies')
 export class VacanciesController {
@@ -41,8 +42,11 @@ export class VacanciesController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRole.COMPANY, UserRole.ADMIN)
-  async create(@Body() payload: CreateVacancyDto) {
-    return this.service.create(payload);
+  async create(
+    @Body() payload: CreateVacancyDto,
+    @CurrentUser() user: { id: number | string; role: UserRole },
+  ) {
+    return this.service.create(payload, user);
   }
 
   @Patch(':id')

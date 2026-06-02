@@ -27,7 +27,7 @@
           <h2>{{user.full_name}}</h2>
           <p>{{user.position}} {{#if user.city}}· {{user.city}}{{/if}}</p>
         </div>
-        <button class="btn-outline-sm" onclick="document.getElementById('fullNameInput').focus()">
+        <button class="btn-outline-sm" onclick="document.getElementById('inp_full_name').focus()">
           <i class="fa-solid fa-pen"></i> Tahrirlash
         </button>
       </div>
@@ -40,7 +40,7 @@
           <div class="form-row2">
             <div class="form-grp">
               <label>F.I.O</label>
-              <input id="fullNameInput" type="text" id="inp_full_name" value="{{user.full_name}}" class="finput">
+              <input type="text" id="inp_full_name" value="{{user.full_name}}" class="finput">
             </div>
             <div class="form-grp">
               <label>Lavozim</label>
@@ -63,9 +63,9 @@
               <input type="text" id="inp_city" value="{{user.city}}" placeholder="Toshkent" class="finput">
             </div>
             <div class="form-grp">
-              <label>Telegram ID</label>
-              <input type="text" id="inp_telegram" value="{{user.telegram_id}}" placeholder="@username" class="finput">
-              <small class="muted">Bildirishnomalar uchun</small>
+              <label>Telegram Chat ID</label>
+              <input type="text" id="inp_telegram" value="{{user.telegram_id}}" placeholder="Masalan: 123456789" class="finput">
+              <small class="muted">Botda /start bosib oling. <a href="/telegram">Telegram sahifasi</a></small>
             </div>
           </div>
           <div class="form-grp">

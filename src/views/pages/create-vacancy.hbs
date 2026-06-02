@@ -96,8 +96,6 @@
   </div>
 
   <script>
-    const companyId = {{#if company}}{{company.id}}{{else}}0{{/if}};
-
     function goStep(n) {
       document.querySelectorAll('.wpanel').forEach(p => p.style.display = 'none');
       document.querySelector(`[data-panel="${n}"]`).style.display = 'block';
@@ -121,12 +119,12 @@
       const btn = document.getElementById('publishBtn');
       errEl.style.display = 'none';
 
+      // company_id yubormaymiz — server uni autentifikatsiyadan o'zi aniqlaydi
       const data = {
         title: document.getElementById('title').value.trim(),
         description: document.getElementById('description').value.trim(),
         location: document.getElementById('location').value.trim(),
         category_id: Number(document.getElementById('category_id').value),
-        company_id: companyId,
       };
       const salary = document.getElementById('salary').value;
       if (salary) data.salary = Number(salary);
@@ -136,8 +134,8 @@
         errEl.style.display = 'block';
         return;
       }
-      if (!companyId) {
-        errEl.textContent = 'Kompaniya topilmadi. Avval kompaniya profilini to\'ldiring.';
+      if (!data.category_id) {
+        errEl.textContent = 'Kategoriyani tanlang';
         errEl.style.display = 'block';
         return;
       }

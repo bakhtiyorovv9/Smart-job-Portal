@@ -115,17 +115,19 @@ export class PagesController {
   }
 
   @Get('my-vacancies')
-  @Render('pages/company-vacancies')
-  async companyVacancies(@Req() req: Request) {
-    const user = req.user || { full_name: 'Mehmon', role: 'company', id: 0 };
-    const company = user.id
-      ? await this.companiesService.getByOwner(user.id)
-      : null;
+  async companyVacancies(@Req() req: Request, @Res() res: Response) {
+    const user = req.user;
+    if (!user) return res.redirect('/auth/sign-in');
+
+    const company =
+      user.role === 'company'
+        ? await this.companiesService.getOrCreateByOwner(user.id)
+        : await this.companiesService.getByOwner(user.id);
 
     let vacancies: any[] = [];
     if (company) {
-      const res = await this.vacanciesService.getByCompany(company.id);
-      vacancies = res.data || [];
+      const vRes = await this.vacanciesService.getByCompany(company.id);
+      vacancies = vRes.data || [];
     }
 
     const totalApplications = vacancies.reduce(
@@ -134,7 +136,7 @@ export class PagesController {
     );
     const activeCount = vacancies.filter((v) => v.is_active).length;
 
-    return {
+    return res.render('pages/company-vacancies', {
       active: 'my-vacancies',
       user,
       company,
@@ -144,32 +146,37 @@ export class PagesController {
         total: vacancies.length,
         applications: totalApplications,
       },
-    };
+    });
   }
 
   @Get('create-vacancy')
-  @Render('pages/create-vacancy')
-  async createVacancyPage(@Req() req: Request) {
-    const user = req.user || { full_name: 'Mehmon', role: 'company', id: 0 };
-    const company = user.id
-      ? await this.companiesService.getByOwner(user.id)
-      : null;
+  async createVacancyPage(@Req() req: Request, @Res() res: Response) {
+    const user = req.user;
+    if (!user) return res.redirect('/auth/sign-in');
+
+    const company =
+      user.role === 'company'
+        ? await this.companiesService.getOrCreateByOwner(user.id)
+        : await this.companiesService.getByOwner(user.id);
     const cats = await this.categoriesService.getAll();
-    return {
+
+    return res.render('pages/create-vacancy', {
       active: 'create-vacancy',
       user,
       company,
       categories: cats.data,
-    };
+    });
   }
 
   @Get('company-applications')
-  @Render('pages/company-applications')
-  async companyApplications(@Req() req: Request) {
-    const user = req.user || { full_name: 'Mehmon', role: 'company', id: 0 };
-    const company = user.id
-      ? await this.companiesService.getByOwner(user.id)
-      : null;
+  async companyApplications(@Req() req: Request, @Res() res: Response) {
+    const user = req.user;
+    if (!user) return res.redirect('/auth/sign-in');
+
+    const company =
+      user.role === 'company'
+        ? await this.companiesService.getOrCreateByOwner(user.id)
+        : await this.companiesService.getByOwner(user.id);
 
     let vacancies: any[] = [];
     let applications: any[] = [];
@@ -180,16 +187,15 @@ export class PagesController {
       applications = aRes.data || [];
     }
 
-    return {
+    return res.render('pages/company-applications', {
       active: 'company-applications',
       user,
       company,
       vacancies,
       applications,
-    };
+    });
   }
 
-  /* ===== ADMIN — faqat admin kira oladi ===== */
 
   @Get('admin/users')
   async adminUsers(@Req() req: Request, @Res() res: Response) {
@@ -242,9 +248,9 @@ export class PagesController {
   }
 
   @Get('telegram')
-  @Render('pages/telegram')
-  async telegramPage(@Req() req: Request) {
-    const user = req.user || { full_name: 'Mehmon', role: 'candidate', id: 0 };
-    return { active: 'telegram', user };
+  async telegramPage(@Req() req: Request, @Res() res: Response) {
+    const user = req.user;
+    if (!user) return res.redirect('/auth/sign-in');
+    return res.render('pages/telegram', { active: 'telegram', user });
   }
 }

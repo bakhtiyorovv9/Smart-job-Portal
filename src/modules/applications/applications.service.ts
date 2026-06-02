@@ -22,14 +22,18 @@ export class ApplicationsService {
     private readonly mailService: MailService,
   ) {}
 
-  async create(dto: CreateApplicationDto, resumeFile: Express.Multer.File) {
+  async create(
+    dto: CreateApplicationDto,
+    userId: number,
+    resumeFile: Express.Multer.File,
+  ) {
     if (!resumeFile) {
       throw new ConflictException('Resume file is required');
     }
 
-    const user = await this.userModel.findByPk(dto.user_id);
+    const user = await this.userModel.findByPk(userId);
     if (!user) {
-      throw new NotFoundException(`User ${dto.user_id} not found`);
+      throw new NotFoundException(`User ${userId} not found`);
     }
 
     const vacancy = await this.vacancyModel.findByPk(dto.vacancy_id);
@@ -38,14 +42,14 @@ export class ApplicationsService {
     }
 
     const exists = await this.model.findOne({
-      where: { user_id: dto.user_id, vacancy_id: dto.vacancy_id },
+      where: { user_id: userId, vacancy_id: dto.vacancy_id },
     });
     if (exists) {
       throw new ConflictException('You already applied to this vacancy');
     }
 
     const application = await this.model.create({
-      user_id: dto.user_id,
+      user_id: userId,
       vacancy_id: dto.vacancy_id,
       resume: resumeFile.filename,
     });

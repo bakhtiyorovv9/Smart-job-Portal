@@ -14,6 +14,14 @@ import { ResponseTransformInterceptor } from './common/interceptors/response-tra
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
+  const hbsAny = hbs as any;
+  const _compile = hbsAny.handlebars.compile.bind(hbsAny.handlebars);
+  hbsAny.handlebars.compile = (template: string, options?: any) =>
+    _compile(template, {
+      allowProtoPropertiesByDefault: true,
+      allowProtoMethodsByDefault: true,
+      ...options,
+    });
 
   app.useStaticAssets(join(process.cwd(), 'public'), { prefix: '/public/' });
   app.useStaticAssets(join(process.cwd(), 'uploads'), { prefix: '/uploads/' });

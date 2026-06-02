@@ -21,9 +21,9 @@ export class TelegramUpdate {
     const firstName = (ctx.from as any)?.first_name || 'foydalanuvchi';
 
     await ctx.reply(
-      `👋 Salom, ${firstName}!\n\n` +
-        `🏢 Smart Job Portal botiga xush kelibsiz!\n\n` +
-        `📌 Sizning Chat ID: \`${chatId}\`\n\n` +
+      `Salom, ${firstName}!\n\n` +
+        `Smart Job Portal botiga xush kelibsiz!\n\n` +
+        `Sizning Chat ID: \`${chatId}\`\n\n` +
         `Akkountingizga ulash uchun bu ID ni profilingizga kiriting.\n\n` +
         `Buyruqlar:\n` +
         `/jobs - so\u2018nggi vakansiyalar\n` +
@@ -56,7 +56,7 @@ export class TelegramUpdate {
     });
 
     if (!vacancies.length) {
-      await ctx.reply('😔 Hozircha vakansiyalar yo\u2018q.');
+      await ctx.reply('Hozircha vakansiyalar yo\u2018q.');
       return;
     }
 
@@ -81,8 +81,8 @@ export class TelegramUpdate {
 
     if (!user) {
       await ctx.reply(
-        '⚠️ Sizning telegram akkountingiz tizimga ulanmagan.\n\n' +
-          '👉 /start buyrug\u2018ini bosib, Chat ID ni profilingizga kiriting.',
+        '⚠️ Sizning telegram akkauntingiz tizimga ulanmagan.\n\n' +
+          '/start buyrug\u2018ini bosib, Chat ID ni profilingizga kiriting.',
       );
       return;
     }
